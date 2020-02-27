@@ -1,7 +1,6 @@
 name: 'Determine latest release tag'
 description: 'Determine which "v*" Git tag matches the commit currently tagged with "latest"'
 author: 'Flownative'
-inputs: []
 outputs:
   tag:
     description: 'The Git version tag ("v*") matching the commit currently tagged as "latest".'
