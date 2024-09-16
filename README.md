@@ -1,6 +1,6 @@
-# Git Latest Release Github Action
+# Git Latest Release GitHub Action
 
-This Github action looks for a commit tagged as "latest" in the current
+This GitHub action looks for a commit tagged as "latest" in the current
 Git repository and tries to determine a version Git tag (one prefixed
 with "v") for that commit.
 
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: 'latest'
 
@@ -32,10 +32,29 @@ jobs:
         id: latest_version
         uses: flownative/action-git-latest-release@v1
 
-      - name: Build Docker image
-        uses: flownative/action-docker-build@v1
+      - uses: actions/checkout@v4
         with:
-          tag_ref: ${{ steps.latest_version.outputs.tag }}
-          image_name: flownative/docker-base/base
-          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ steps.latest_version.outputs.tag }}
+          fetch-depth: 100
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          flavor: |
+            latest=true
+          images: |
+            harbor.example.com/acme/my-app
+          tags: |
+            type=semver,pattern={{major}},value=${{ steps.latest_version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest_version.outputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.latest_version.outputs.version }}
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
 ````
